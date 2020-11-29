@@ -51,30 +51,31 @@ func GetUser(id string) (*model.User, error) {
 
 }
 
-func AddUser(user *model.User) error {
-
+func AddUser(user *model.User) (string, error) {
+	id := ""
 	db, err := database.GetDatabase()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`insert into users(nickname, email, password) values ($1, $2 ,$3) returning *`)
+	stmt, err := db.Preparex(`insert into users(nickname, email, password) values ($1, $2 ,$3) returning id`)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	hashedPassword, err := util.HashPassword(user.Password)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = stmt.Queryx(user.Nickname, user.Email, hashedPassword)
+	row := stmt.QueryRowx(user.Nickname, user.Email, hashedPassword)
+	err = row.Scan(&id)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func UpdateUser(user *model.User) error {

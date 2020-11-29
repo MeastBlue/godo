@@ -34,13 +34,30 @@ func AddUser(c *gin.Context) {
 		return
 	}
 
-	err := service.AddUser(&u)
+	id, err := service.AddUser(&u)
 	if err != nil {
 		util.SendJsonError(c, err.Error())
 		return
 	}
 
-	util.SendJsonCreated(c, "created")
+	token, err := util.CreateToken(id)
+	if err != nil {
+		util.SendJsonError(c, err.Error())
+		return
+	}
+
+	err = util.CreateAuth(id, token)
+	if err != nil {
+		util.SendJsonError(c, err.Error())
+		return
+	}
+
+	tokens := map[string]string{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
+	}
+
+	util.SendJsonCreated(c, tokens)
 }
 
 func UpdateUser(c *gin.Context) {

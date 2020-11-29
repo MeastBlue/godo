@@ -21,7 +21,6 @@ func Login(c *gin.Context) {
 	}
 
 	util.SendJsonOK(c, nil)
-
 }
 
 func Logout(c *gin.Context) {
