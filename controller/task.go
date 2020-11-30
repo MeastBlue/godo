@@ -7,7 +7,6 @@ import (
 )
 
 func GetTasks(c *gin.Context) {
-
 	tasks, err := service.GetTasks()
 	if err != nil {
 		util.SendJsonError(c, err)

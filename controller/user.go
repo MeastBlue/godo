@@ -8,6 +8,18 @@ import (
 )
 
 func GetUsers(c *gin.Context) {
+	tokenAuth, err := util.ExtractTokenMetadata(c.Request)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
+	_, err = util.FetchAuth(tokenAuth)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
 	users, err := service.GetUsers()
 	if err != nil {
 		util.SendJsonError(c, err)
@@ -18,6 +30,18 @@ func GetUsers(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
+	tokenAuth, err := util.ExtractTokenMetadata(c.Request)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
+	_, err = util.FetchAuth(tokenAuth)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
 	user, err := service.GetUser(c.Param("id"))
 	if err != nil {
 		util.SendJsonError(c, err.Error())
@@ -61,13 +85,25 @@ func AddUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
+	tokenAuth, err := util.ExtractTokenMetadata(c.Request)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
+	_, err = util.FetchAuth(tokenAuth)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
 	u := model.User{}
 	if err := c.ShouldBindJSON(&u); err != nil {
 		util.SendJsonError(c, err.Error())
 		return
 	}
 
-	err := service.UpdateUser(&u)
+	err = service.UpdateUser(&u)
 	if err != nil {
 		util.SendJsonError(c, err.Error())
 		return
@@ -77,7 +113,19 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	err := service.DeleteUser(c.Param("id"))
+	tokenAuth, err := util.ExtractTokenMetadata(c.Request)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
+	_, err = util.FetchAuth(tokenAuth)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+
+	err = service.DeleteUser(c.Param("id"))
 	if err != nil {
 		util.SendJsonError(c, err.Error())
 		return

@@ -12,9 +12,7 @@ func CreateAuth(id string, token *model.Token) error {
 	at := time.Unix(token.AtExpires, 0)
 	rt := time.Unix(token.RtExpires, 0)
 	now := time.Now()
-
 	client := database.IniStorage()
-
 	errAccess := client.Set(token.AccessUUID, id, at.Sub(now)).Err()
 	if errAccess != nil {
 		log.Fatalf("NICKNAME: %s\n", errAccess.Error())

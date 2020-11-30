@@ -17,18 +17,8 @@ func SendJsonCreated(c *gin.Context, data interface{}) {
 	sendJsonWithStatus(c, &formatData)
 }
 
-func SendJsonNotFound(c *gin.Context, data interface{}) {
-	formatData := formatJsonResponse(http.StatusNotFound, &data)
-	sendJsonWithStatus(c, &formatData)
-}
-
 func SendJsonNoCotent(c *gin.Context, data interface{}) {
 	formatData := formatJsonResponse(http.StatusNoContent, &data)
-	sendJsonWithStatus(c, &formatData)
-}
-
-func SendJsonError(c *gin.Context, data interface{}) {
-	formatData := formatJsonResponse(http.StatusInternalServerError, &data)
 	sendJsonWithStatus(c, &formatData)
 }
 
@@ -37,13 +27,23 @@ func SendJsonUnauthorized(c *gin.Context, data interface{}) {
 	sendJsonWithStatus(c, &formatData)
 }
 
+func SendJsonForbidden(c *gin.Context, data interface{}) {
+	formatData := formatJsonResponse(http.StatusForbidden, &data)
+	sendJsonWithStatus(c, &formatData)
+}
+
+func SendJsonNotFound(c *gin.Context, data interface{}) {
+	formatData := formatJsonResponse(http.StatusNotFound, &data)
+	sendJsonWithStatus(c, &formatData)
+}
+
 func SendJsonUnprocessableEntity(c *gin.Context, data interface{}) {
 	formatData := formatJsonResponse(http.StatusUnprocessableEntity, &data)
 	sendJsonWithStatus(c, &formatData)
 }
 
-func SendJsonForbidden(c *gin.Context, data interface{}) {
-	formatData := formatJsonResponse(http.StatusForbidden, &data)
+func SendJsonError(c *gin.Context, data interface{}) {
+	formatData := formatJsonResponse(http.StatusInternalServerError, &data)
 	sendJsonWithStatus(c, &formatData)
 }
 

@@ -24,4 +24,15 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
+	au, err := util.ExtractTokenMetadata(c.Request)
+	if err != nil {
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+	deleted, delErr := util.DeleteAuth(au.AccessUuid)
+	if delErr != nil || deleted == 0 { //if any goes wrong
+		util.SendJsonUnauthorized(c, err.Error())
+		return
+	}
+	util.SendJsonOK(c, nil)
 }
