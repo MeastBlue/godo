@@ -15,11 +15,11 @@ func RefreshToken(c *gin.Context) {
 		util.SendJsonUnprocessableEntity(c, err.Error())
 		return
 	}
+	
 	refreshToken := mapToken["refresh_token"]
-	fmt.Printf("DATA: %s\n", refreshToken)
-
 	token, err := util.MapToken(refreshToken)
 	if err != nil {
+		fmt.Printf("ERR: %s\n", err)
 		util.SendJsonUnauthorized(c, err.Error())
 		return
 	}
@@ -31,30 +31,30 @@ func RefreshToken(c *gin.Context) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		refreshUuid, ok := claims["refresh_uuid"].(string)
+		refreshID, ok := claims["refresh_id"].(string)
 		if !ok {
 			util.SendJsonUnprocessableEntity(c, err.Error())
 			return
 		}
-		userId, ok := claims["user_id"].(string)
+		userID, ok := claims["user_id"].(string)
 		if !ok {
 			util.SendJsonUnprocessableEntity(c, err.Error())
 			return
 		}
 
-		deleted, delErr := util.DeleteAuth(refreshUuid)
+		deleted, delErr := util.DeleteAuth(refreshID)
 		if delErr != nil || deleted == 0 { //if any goes wrong
 			util.SendJsonUnauthorized(c, delErr.Error())
 			return
 		}
 
-		ts, createErr := util.CreateToken(userId)
+		ts, createErr := util.CreateToken(userID)
 		if createErr != nil {
 			util.SendJsonUnauthorized(c, createErr.Error())
 			return
 		}
 
-		saveErr := util.CreateAuth(userId, ts)
+		saveErr := util.CreateAuth(userID, ts)
 		if saveErr != nil {
 			util.SendJsonUnauthorized(c, saveErr.Error())
 			return

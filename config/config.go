@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
@@ -74,7 +75,12 @@ func setJwtConf(c *model.Config) {
 
 	for i := 0; i < v.NumField(); i++ {
 		key := fmt.Sprintf("jwt.%s", field.Field(i).Name)
-		val := fmt.Sprintf("%s", v.Field(i).Interface())
-		os.Setenv(key, val)
+		path := fmt.Sprintf("%s", v.Field(i).Interface())
+		val, err := ioutil.ReadFile(path)
+		if err != nil {
+			log.Fatalf("Couldn't read jwt path: %s", err)
+		}
+		fmt.Printf("%s\n", val)
+		os.Setenv(key, string(val))
 	}
 }

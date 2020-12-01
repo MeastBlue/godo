@@ -15,19 +15,19 @@ import (
 func CreateToken(id string) (*model.Token, error) {
 	td := model.Token{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	accessUUID, err := uuid.NewV4()
+	accessID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
 	}
 
-	td.AccessUUID = accessUUID.String()
+	td.AccessID = accessID.String()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	refreshUUID, err := uuid.NewV4()
+	refreshID, err := uuid.NewV4()
 	if err != nil {
 		return nil, err
 	}
 
-	td.RefreshUUID = refreshUUID.String()
+	td.RefreshID = refreshID.String()
 	accessToken, err := createAccessToken(&td, id)
 	if err != nil {
 		return nil, err
@@ -45,22 +45,22 @@ func CreateToken(id string) (*model.Token, error) {
 }
 
 func createAccessToken(token *model.Token, id string) (string, error) {
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = token.AccessUUID
-	atClaims["user_id"] = id
-	atClaims["exp"] = token.AtExpires
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"authorized": true,
+		"access_id":  token.AccessID,
+		"user_id":    id,
+		"exp":        token.AtExpires,
+	})
 
 	return at.SignedString([]byte(os.Getenv("jwt.Access")))
 }
 
 func createRefreshToken(token *model.Token, id string) (string, error) {
-	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = token.RefreshUUID
-	rtClaims["user_id"] = id
-	rtClaims["exp"] = token.RtExpires
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"refresh_id": token.RefreshID,
+		"user_id":    id,
+		"exp":        token.RtExpires,
+	})
 
 	return rt.SignedString([]byte(os.Getenv("jwt.Refresh")))
 }
@@ -124,19 +124,19 @@ func ExtractTokenMetadata(r *http.Request) (*model.AccessDetails, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		accessUuid, ok := claims["access_uuid"].(string)
+		accessID, ok := claims["access_id"].(string)
 		if !ok {
 			return nil, err
 		}
 
-		userId, ok := claims["user_id"].(string)
+		userID, ok := claims["user_id"].(string)
 		if !ok {
 			return nil, err
 		}
 
 		return &model.AccessDetails{
-			AccessUuid: accessUuid,
-			UserId:     userId,
+			AccessID: accessID,
+			UserID:   userID,
 		}, nil
 	}
 

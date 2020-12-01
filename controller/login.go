@@ -29,7 +29,7 @@ func Logout(c *gin.Context) {
 		util.SendJsonUnauthorized(c, err.Error())
 		return
 	}
-	deleted, delErr := util.DeleteAuth(au.AccessUuid)
+	deleted, delErr := util.DeleteAuth(au.AccessID)
 	if delErr != nil || deleted == 0 { //if any goes wrong
 		util.SendJsonUnauthorized(c, err.Error())
 		return

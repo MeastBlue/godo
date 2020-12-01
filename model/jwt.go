@@ -10,14 +10,14 @@ type JWT struct {
 type Token struct {
 	AccessToken  string
 	RefreshToken string
-	AccessUUID   string
-	RefreshUUID  string
+	AccessID     string
+	RefreshID    string
 	AtExpires    int64
 	RtExpires    int64
 }
 
 // AccessDetails type struct
 type AccessDetails struct {
-	AccessUuid string
-	UserId     string
+	AccessID string
+	UserID   string
 }

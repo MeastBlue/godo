@@ -13,13 +13,13 @@ func CreateAuth(id string, token *model.Token) error {
 	rt := time.Unix(token.RtExpires, 0)
 	now := time.Now()
 	client := database.IniStorage()
-	errAccess := client.Set(token.AccessUUID, id, at.Sub(now)).Err()
+	errAccess := client.Set(token.AccessID, id, at.Sub(now)).Err()
 	if errAccess != nil {
 		log.Fatalf("NICKNAME: %s\n", errAccess.Error())
 		return errAccess
 	}
 
-	errRefresh := client.Set(token.RefreshUUID, id, rt.Sub(now)).Err()
+	errRefresh := client.Set(token.RefreshID, id, rt.Sub(now)).Err()
 	if errRefresh != nil {
 		return errRefresh
 	}
@@ -29,7 +29,7 @@ func CreateAuth(id string, token *model.Token) error {
 
 func FetchAuth(authD *model.AccessDetails) (string, error) {
 	client := database.IniStorage()
-	userid, err := client.Get(authD.AccessUuid).Result()
+	userid, err := client.Get(authD.AccessID).Result()
 	if err != nil {
 		return "", err
 	}

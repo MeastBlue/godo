@@ -13,5 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+.idea/
+.vscode/
 config/env.yaml
 database/migration/*
+config/key/jwt/access/
+config/key/jwt/refresh/
