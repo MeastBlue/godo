@@ -1,33 +1,34 @@
-postgres:
+maria:
 	docker run \
 		-d \
-		-e POSTGRES_USER=godo \
-		-e POSTGRES_PASSWORD=secret \
-		-e POSTGRES_DB=godo \
-		-p 5500:5432  \
-		--name godoDB \
-		postgres:13.1-alpine
+		-e MYSQL_RANDOM_ROOT_PASSWORD=true \
+		-e MYSQL_DATABASE=godo \
+		-e MYSQL_USER=godo \
+		-e MYSQL_PASSWORD=secret \
+		-p 5500:3306 \
+		--name godoDatabase \
+		mariadb:latest
 
 redis:
 	docker run \
 		-d \
 		-p 6600:6379 \
-		--name godoSTG \
+		--name godoStorage \
 		redis:6.0.9-alpine
 
 infra:
-	make postgres && make redis
+	make maria && make redis
 
 migrateon:
 	migrate create -ext sql -dir database/migration -seq  init_schema
 
 migrateup:
-	migrate -path database/migration -database "postgres://godo:secret@127.0.0.1:5500/godo?sslmode=disable" -verbose up
+	migrate -path database/migration -database "mysql://godo:secret@tcp(127.0.0.1:5500)/godo" -verbose up
 
 migratedown:
-	migrate -path database/migration -database "postgres://godo:secret@127.0.0.1:5500/godo?sslmode=disable" -verbose down
+	migrate -path database/migration -database "mysql://godo:secret@tcp(127.0.0.1:5500)/godo" -verbose down
 
 run:
 	go run main.go
 
-.PHONY: postgres migrateon migrateup migratedown infra run
+.PHONY: maria redis infra migrateon migrateup migratedown run

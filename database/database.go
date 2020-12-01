@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
 
 func GetDatabase() (*sqlx.DB, error) {
@@ -15,9 +15,9 @@ func GetDatabase() (*sqlx.DB, error) {
 
 func getDatabaseString() (string, string) {
 	driver := os.Getenv("db.Driver")
-	url := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		os.Getenv("db.Host"), os.Getenv("db.Port"), os.Getenv("db.User"),
-		os.Getenv("db.Password"), os.Getenv("db.Name"), os.Getenv("db.SSL"))
+	url := fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true",
+		os.Getenv("db.User"), os.Getenv("db.Password"), os.Getenv("db.Host"),
+		os.Getenv("db.Port"), os.Getenv("db.Name"))
 
 	return driver, url
 }

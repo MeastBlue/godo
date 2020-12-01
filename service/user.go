@@ -1,8 +1,6 @@
 package service
 
 import (
-	"time"
-
 	"github.com/meastblue/godo/database"
 	"github.com/meastblue/godo/model"
 	"github.com/meastblue/godo/util"
@@ -37,7 +35,7 @@ func GetUser(id string) (*model.User, error) {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`select * from users where id=$1`)
+	stmt, err := db.Preparex(`select * from users where id=?`)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +57,7 @@ func AddUser(user *model.User) (string, error) {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`insert into users(nickname, email, password) values ($1, $2 ,$3) returning id`)
+	stmt, err := db.Preparex(`insert into users(nickname, email, password) values (?, ?, ?) returning id`)
 	if err != nil {
 		return "", err
 	}
@@ -84,15 +82,13 @@ func UpdateUser(user *model.User) error {
 		return err
 	}
 
-	user.UpdatedAt = time.Now()
-
 	defer db.Close()
-	stmt, err := db.Preparex(`update users set nickname=$1, email=$2, password=$3, updated_at=$4 where id=$5`)
+	stmt, err := db.Preparex(`update users set nickname=?, email=?, password=? where id=?`)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Queryx(user.Nickname, user.Email, user.Password, user.UpdatedAt, user.ID)
+	_, err = stmt.Queryx(user.Nickname, user.Email, user.Password, user.ID)
 	if err != nil {
 		return err
 	}
@@ -107,7 +103,7 @@ func DeleteUser(id string) error {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`delete from users where id=$1`)
+	stmt, err := db.Preparex(`delete from users where id=?`)
 	if err != nil {
 		return err
 	}

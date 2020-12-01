@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -17,17 +16,10 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 	refreshToken := mapToken["refresh_token"]
+	fmt.Printf("DATA: %s\n", refreshToken)
 
-	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("jwt.Access")), nil
-	})
-
-	fmt.Printf("TOKEN: %s\n", err)
+	token, err := util.MapToken(refreshToken)
 	if err != nil {
-		fmt.Printf("ERR: %s\n", err)
 		util.SendJsonUnauthorized(c, err.Error())
 		return
 	}

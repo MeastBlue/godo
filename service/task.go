@@ -34,7 +34,7 @@ func GetTask(id string) (*model.Task, error) {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`SELECT * FROM tasks WHERE id=$1`)
+	stmt, err := db.Preparex(`SELECT * FROM tasks WHERE id=?`)
 	if err != nil {
 		return nil, err
 	}

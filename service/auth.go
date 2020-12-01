@@ -14,7 +14,7 @@ func Login(auth *model.Auth) error {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`select * from users where nickname=$1 or email=$1`)
+	stmt, err := db.Preparex(`select * from users where nickname=? or email=?`)
 	if err != nil {
 		return err
 	}

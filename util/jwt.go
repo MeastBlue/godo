@@ -77,18 +77,30 @@ func ExtractToken(r *http.Request) string {
 
 func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("jwt.Access")), nil
-	})
-
+	token, err := MapToken(tokenString)
 	if err != nil {
 		return nil, err
 	}
 
 	return token, nil
+}
+
+func VerifyRefreshToken(tokenString string) (*jwt.Token, error) {
+	token, err := MapToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
+func MapToken(token string) (*jwt.Token, error) {
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("jwt.Access")), nil
+	})
 }
 
 func TokenValid(r *http.Request) error {
