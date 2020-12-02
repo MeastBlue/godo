@@ -6,13 +6,24 @@ import (
 )
 
 func TokenAuthMiddleware() gin.HandlerFunc {
-  return func(c *gin.Context) {
-     err := util.TokenValid(c.Request)
-     if err != nil {
+	return func(c *gin.Context) {
+		err := util.TokenValid(c.Request)
+		if err != nil {
 			util.SendJsonUnauthorized(c, err.Error())
 			c.Abort()
-        return
-     }
-     c.Next()
-  }
+			return
+		}
+		tokenAuth, err := util.ExtractTokenMetadata(c.Request)
+		if err != nil {
+			util.SendJsonUnauthorized(c, err.Error())
+			return
+		}
+
+		_, err = util.FetchAuth(tokenAuth)
+		if err != nil {
+			util.SendJsonUnauthorized(c, err.Error())
+			return
+		}
+		c.Next()
+	}
 }

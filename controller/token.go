@@ -2,24 +2,16 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/meastblue/godo/util"
 )
 
+// RefreshToken controller function
 func RefreshToken(c *gin.Context) {
-	mapToken := map[string]string{}
-	if err := c.ShouldBindJSON(&mapToken); err != nil {
-		util.SendJsonUnprocessableEntity(c, err.Error())
-		return
-	}
-	
-	refreshToken := mapToken["refresh_token"]
-	token, err := util.MapToken(refreshToken)
+	token, err := util.VerifyRefreshToken(c)
 	if err != nil {
-		fmt.Printf("ERR: %s\n", err)
 		util.SendJsonUnauthorized(c, err.Error())
 		return
 	}
@@ -43,7 +35,7 @@ func RefreshToken(c *gin.Context) {
 		}
 
 		deleted, delErr := util.DeleteAuth(refreshID)
-		if delErr != nil || deleted == 0 { //if any goes wrong
+		if delErr != nil || deleted == 0 {
 			util.SendJsonUnauthorized(c, delErr.Error())
 			return
 		}

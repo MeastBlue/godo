@@ -7,6 +7,7 @@ import (
 	"github.com/meastblue/godo/util"
 )
 
+// Login controller function
 func Login(c *gin.Context) {
 	auth := model.Auth{}
 	if err := c.ShouldBindJSON(&auth); err != nil {
@@ -23,6 +24,7 @@ func Login(c *gin.Context) {
 	util.SendJsonOK(c, nil)
 }
 
+// Logout controller function
 func Logout(c *gin.Context) {
 	au, err := util.ExtractTokenMetadata(c.Request)
 	if err != nil {
@@ -30,7 +32,7 @@ func Logout(c *gin.Context) {
 		return
 	}
 	deleted, delErr := util.DeleteAuth(au.AccessID)
-	if delErr != nil || deleted == 0 { //if any goes wrong
+	if delErr != nil || deleted == 0 {
 		util.SendJsonUnauthorized(c, err.Error())
 		return
 	}

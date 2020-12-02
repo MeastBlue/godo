@@ -5,7 +5,7 @@ import (
 	"github.com/meastblue/godo/model"
 )
 
-func GetTasks() (*model.Tasks, error) {
+func GetTasks(id string) (*model.Tasks, error) {
 	tasks := model.Tasks{}
 	db, err := database.GetDatabase()
 	if err != nil {
@@ -13,12 +13,12 @@ func GetTasks() (*model.Tasks, error) {
 	}
 
 	defer db.Close()
-	stmt, err := db.Preparex(`SELECT * FROM tasks`)
+	stmt, err := db.Preparex(`SELECT * FROM tasks where user_id=`)
 	if err != nil {
 		return nil, err
 	}
 
-	err = stmt.Select(&tasks)
+	err = stmt.Select(&tasks, id)
 	if err != nil {
 		return nil, err
 	}
@@ -45,5 +45,66 @@ func GetTask(id string) (*model.Task, error) {
 	}
 
 	return &task, nil
+}
 
+func AddTask(task *model.Task) (string, error) {
+	id := ""
+	db, err := database.GetDatabase()
+	if err != nil {
+		return "", err
+	}
+
+	defer db.Close()
+	stmt, err := db.Preparex(`insert into tasks(label, user_id) values (?, ?) returning id`)
+	if err != nil {
+		return "", err
+	}
+
+	row := stmt.QueryRowx(task.Label, task.UserID)
+	err = row.Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+func UpdateTask(task *model.Task) error {
+	db, err := database.GetDatabase()
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	stmt, err := db.Preparex(`update tasks set label=?, status=? where id=?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Queryx(task.Label, task.Status, task.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteTask(id string) error {
+	db, err := database.GetDatabase()
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	stmt, err := db.Preparex(`delete from tasks where id=?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Queryx(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

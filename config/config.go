@@ -31,6 +31,7 @@ func Init(ext, file, path string) {
 	setServerConf(&c)
 	setDatabaseConf(&c)
 	setStorageConf(&c)
+	setTlsConf(&c)
 	setJwtConf(&c)
 }
 
@@ -69,6 +70,17 @@ func setStorageConf(c *model.Config) {
 	}
 }
 
+func setTlsConf(c *model.Config) {
+	v := reflect.ValueOf(c.TLS)
+	field := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		key := fmt.Sprintf("tls.%s", field.Field(i).Name)
+		val := fmt.Sprintf("%s", v.Field(i).Interface())
+		os.Setenv(key, val)
+	}
+}
+
 func setJwtConf(c *model.Config) {
 	v := reflect.ValueOf(c.JWT)
 	field := v.Type()
@@ -80,7 +92,6 @@ func setJwtConf(c *model.Config) {
 		if err != nil {
 			log.Fatalf("Couldn't read jwt path: %s", err)
 		}
-		fmt.Printf("%s\n", val)
 		os.Setenv(key, string(val))
 	}
 }

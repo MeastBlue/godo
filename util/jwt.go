@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/meastblue/godo/model"
 )
@@ -75,9 +76,9 @@ func ExtractToken(r *http.Request) string {
 	return ""
 }
 
-func VerifyToken(r *http.Request) (*jwt.Token, error) {
+func VerifyAccessToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
-	token, err := MapToken(tokenString)
+	token, err := MapToken(tokenString, os.Getenv("jwt.Access"))
 	if err != nil {
 		return nil, err
 	}
@@ -85,26 +86,31 @@ func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	return token, nil
 }
 
-func VerifyRefreshToken(tokenString string) (*jwt.Token, error) {
-	token, err := MapToken(tokenString)
-	if err != nil {
+func VerifyRefreshToken(c *gin.Context) (*jwt.Token, error) {
+	mapToken := map[string]string{}
+	if err := c.ShouldBindJSON(&mapToken); err != nil {
+		SendJsonUnprocessableEntity(c, err.Error())
 		return nil, err
 	}
 
-	return token, nil
+	refreshToken := mapToken["refresh_token"]
+	token, err := MapToken(refreshToken, os.Getenv("jwt.Refresh"))
+	return token, err
 }
 
-func MapToken(token string) (*jwt.Token, error) {
-	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+func MapToken(token string, key string) (*jwt.Token, error) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("jwt.Access")), nil
+		return []byte(key), nil
 	})
+	fmt.Printf("TOKEN: %s\n ERR: %s\n", t, err)
+	return t, err
 }
 
 func TokenValid(r *http.Request) error {
-	token, err := VerifyToken(r)
+	token, err := VerifyAccessToken(r)
 	if err != nil {
 		return err
 	}
@@ -117,7 +123,7 @@ func TokenValid(r *http.Request) error {
 }
 
 func ExtractTokenMetadata(r *http.Request) (*model.AccessDetails, error) {
-	token, err := VerifyToken(r)
+	token, err := VerifyAccessToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -141,4 +147,14 @@ func ExtractTokenMetadata(r *http.Request) (*model.AccessDetails, error) {
 	}
 
 	return nil, err
+}
+
+// GetUserIDFromJwt controller function
+func GetUserIDFromJwt(r *http.Request) (string, error) {
+	tokenAuth, err := ExtractTokenMetadata(r)
+	if err != nil {
+		return " ", err
+	}
+
+	return tokenAuth.UserID, nil
 }
